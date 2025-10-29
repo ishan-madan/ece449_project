@@ -3,19 +3,18 @@ from pathlib import Path
 import cv2
 from ultralytics import YOLO
 
+# global vars
+MODEL_PATH = "best.pt"
+CONF = 0.25
+IOU = 0.1
+PHOTO_DIR = "annotated_photos/"
+model = YOLO(MODEL_PATH)
+
 def detect_animal(image_path: str):
-    # global vars
-    MODEL_PATH = "best.pt"
-    CONF = 0.25
-    IOU = 0.5
-    PHOTO_DIR = "annotated_photos/"
-    
+
     img_path = Path(image_path)
     if not img_path.exists():
-        raise FileNotFoundError(f"Image not found: {img_path}")
-
-    # Load the model
-    model = YOLO(MODEL_PATH)
+        raise FileNotFoundError(img_path)
 
     # Run inference
     results = model(str(img_path), conf=CONF, iou=IOU)[0]
@@ -25,7 +24,7 @@ def detect_animal(image_path: str):
 
     # Save annotated image
     annotated = results.plot()
-    out_path = img_path.with_name(img_path.stem + "_out" + ("_true" if animal_detected else "_false") + img_path.suffix)
+    out_path = f"{image_path}"
     cv2.imwrite(str(out_path), annotated)
 
     return {

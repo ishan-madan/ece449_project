@@ -3,6 +3,7 @@ from pathlib import Path
 import cv2
 from ultralytics import YOLO
 import numpy as np
+import time
 
 # Load model globally so you don’t reload every call
 MODEL_PATH = "best.pt"
@@ -18,15 +19,15 @@ def detect_animal(image):
         - str / Path -> path to image file
         - np.ndarray -> image in memory (H, W, C) RGB or BGR
     """
-    # Convert path to numpy array if necessary
-    if isinstance(image, (str, Path)):
-        img_path = Path(image)
-        if not img_path.exists():
-            raise FileNotFoundError(f"Image not found: {img_path}")
-        img = cv2.imread(str(img_path))
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        save_base_path = img_path.stem
-    elif isinstance(image, np.ndarray):
+    # Convert path to numpy array if nepcessary
+    #if isinstance(image, (str, Path)):
+        #img_path = Path(image)
+        #if not img_path.exists():
+            #raise FileNotFoundError(f"Image not found: {img_path}")
+        #img = cv2.imread(str(img_path))
+        #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        #save_base_path = img_path.stem
+    if isinstance(image, np.ndarray):
         img = image
         save_base_path = "memory_image_" + str(int(time.time()))
     else:

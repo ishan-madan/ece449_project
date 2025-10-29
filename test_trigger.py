@@ -5,9 +5,9 @@ from datetime import datetime
 from PIL import Image
 import io
 import numpy as np
-from lightweightml import detect_animal  # assuming detect_animal can accept numpy arrays
+from test_ml import detect_animal  # assuming detect_animal can accept numpy arrays
 
-GPIO_PINS = [20, 21, 26]
+GPIO_PINS = [20]
 CAM_ASSIGN = {20:'0', 21:'1', 26:'2'}
 DEBOUNCE_TIME = 0.2
 
@@ -32,6 +32,8 @@ def take_photo_in_memory(pir_sensor):
     # Convert to numpy array and preprocess for ML
     image_array = np.array(image) / 255.0
     image_array = np.expand_dims(image_array, axis=0)  # add batch dimension if needed
+    
+    print("IMage shape:", image_array.shape)
     
     # Run ML model
     predictions = detect_animal(image_array)
