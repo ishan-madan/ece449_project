@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 import subprocess
 import time
 from datetime import datetime
+from lightweightml import detect_animal
 
 GPIO_PINS = [20, 21, 26]
 CAM_ASSIGN = {20:'0', 21:'1', 26:'2'}

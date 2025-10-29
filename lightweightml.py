@@ -3,39 +3,29 @@ from pathlib import Path
 import cv2
 from ultralytics import YOLO
 
-def detect_animal(image_path: str, model_path: str = "best.pt", conf: float = 0.25, iou: float = 0.5):
-    """
-    Detects animals in an image using a YOLO model.
-
-    Args:
-        image_path (str): Path to the image.
-        model_path (str): Path to the YOLO model file (default: "best.pt").
-        conf (float): Confidence threshold.
-        iou (float): IoU threshold.
-
-    Returns:
-        dict: {
-            "animal_detected": bool,
-            "confidences": list of float,
-            "annotated_path": str
-        }
-    """
+def detect_animal(image_path: str):
+    # global vars
+    MODEL_PATH = "best.pt"
+    CONF = 0.25
+    IOU = 0.5
+    PHOTO_DIR = "annotated_photos/"
+    
     img_path = Path(image_path)
     if not img_path.exists():
         raise FileNotFoundError(f"Image not found: {img_path}")
 
     # Load the model
-    model = YOLO(model_path)
+    model = YOLO(MODEL_PATH)
 
     # Run inference
-    results = model(str(img_path), conf=conf, iou=iou)[0]
+    results = model(str(img_path), conf=CONF, iou=IOU)[0]
 
     confidences = [float(b.conf[0]) for b in results.boxes]
     animal_detected = len(confidences) > 0
 
     # Save annotated image
     annotated = results.plot()
-    out_path = img_path.with_name(img_path.stem + "_out" + img_path.suffix)
+    out_path = img_path.with_name(img_path.stem + "_out" + ("_true" if animal_detected else "_false") + img_path.suffix)
     cv2.imwrite(str(out_path), annotated)
 
     return {
