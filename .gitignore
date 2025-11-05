@@ -1,2 +1,4 @@
 /test_photos/
 __pycache__
+.idea
+.code
