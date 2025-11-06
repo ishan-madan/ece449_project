@@ -8,8 +8,8 @@ from lightweightml import detect_animal
 "21: Front PIR(1),26: PIR(2),20: 3, 16: Back PIR(4)"
 
 # store gpio pins to listen to and assign cameras to those pins
-# GPIO_PINS = [20, 21, 26, 16]
-GPIO_PINS = [20]
+GPIO_PINS = [20, 21, 26, 16]
+# GPIO_PINS = [20]
 CAM_ASSIGN = {20:'0', 21:'1', 26:'2', 16:'0'}
 
 # the amount of time we will wait after a pin goes low before allowing it to scan again

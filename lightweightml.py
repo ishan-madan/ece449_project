@@ -4,7 +4,7 @@ import cv2
 from ultralytics import YOLO
 
 # global vars
-MODEL_PATH = "best.pt"
+MODEL_PATH = "models/ishan_v1.pt"
 CONF = 0.25
 IOU = 0.1
 PHOTO_DIR = "annotated_photos/"
