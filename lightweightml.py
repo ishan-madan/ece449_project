@@ -2,16 +2,19 @@
 from pathlib import Path
 import cv2
 from ultralytics import YOLO
+import time
+from datetime import datetime
 
 # global vars
-MODEL_PATH = "models/ishan_v1.pt"
+MODEL_PATH = "models/ishan_v2.pt"
 CONF = 0.25
 IOU = 0.1
 PHOTO_DIR = "annotated_photos/"
 model = YOLO(MODEL_PATH)
 
 def detect_animal(image_path: str):
-
+    start_time = datetime.now()
+    
     img_path = Path(image_path)
     if not img_path.exists():
         raise FileNotFoundError(img_path)
@@ -26,11 +29,14 @@ def detect_animal(image_path: str):
     annotated = results.plot()
     out_path = f"{image_path}"
     cv2.imwrite(str(out_path), annotated)
+    
+    trigger_time = datetime.now() - start_time
 
     return {
         "animal_detected": animal_detected,
         "confidences": confidences,
-        "annotated_path": str(out_path)
+        "annotated_path": str(out_path),
+        "trigger_time": trigger_time
     }
 
 # Optional: allow running directly as a script

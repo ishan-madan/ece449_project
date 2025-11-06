@@ -3,6 +3,7 @@ import subprocess
 import time
 import requests
 from datetime import datetime
+import json
 from lightweightml import detect_animal
 
 "21: Front PIR(1),26: PIR(2),20: 3, 16: Back PIR(4)"
@@ -35,7 +36,7 @@ low_time = None
 def take_photo(pir_sensor):
 	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 	photo_path = f"{PHOTO_DIR}photo_{pir_sensor}_{timestamp}.jpg"
-	subprocess.run(["rpicam-still", "-t", "2000", "--camera", CAM_ASSIGN[pir_sensor], "-o", photo_path])
+	subprocess.run(["rpicam-still", "-t", "2000", "--camera", CAM_ASSIGN[pir_sensor], "-o", photo_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 	print(f"Photo takesn and saved to {photo_path}")
 	return detect_animal(photo_path)
 
@@ -117,7 +118,8 @@ try:
 
 				# take photo and process results
 				detectionResults = take_photo(active_pin)
-				print(detectionResults)
+				print(json.dumps(detectionResults, indent=2, default=str))
+				
 
 				# if animal is detected, trigger wifi call to deter system
 				if detectionResults["animal_detected"] == True:
