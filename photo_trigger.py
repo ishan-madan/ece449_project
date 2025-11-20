@@ -6,6 +6,9 @@ from datetime import datetime
 import json
 from lightweightml import detect_animal
 
+with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
+	f.write("Script started!")
+
 "21: Front PIR(1),26: PIR(2),20: 3, 16: Back PIR(4)"
 
 # store gpio pins to listen to and assign cameras to those pins
@@ -20,7 +23,7 @@ DEBOUNCE_TIME = 0.2
 MAX_HIGH_DURATION = 30.0
 
 # photo directory to save photos into
-PHOTO_DIR = "/home/ratwranglers/Desktop/ece449_project/test_photos"
+PHOTO_DIR = "/home/ratwranglers/ece449_project/test_photos"
 
 GPIO.setmode(GPIO.BCM)
 
@@ -37,7 +40,7 @@ def take_photo(pir_sensor):
 	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 	photo_path = f"{PHOTO_DIR}photo_{pir_sensor}_{timestamp}.jpg"
 	subprocess.run(["rpicam-still", "-t", "2000", "--camera", CAM_ASSIGN[pir_sensor], "-o", photo_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-	print(f"Photo takesn and saved to {photo_path}")
+	print_text(f"Photo takesn and saved to {photo_path}")
 	return detect_animal(photo_path)
 
 
@@ -65,18 +68,18 @@ def check_unblock_conditions():
 	# track when the pin goes low
 	if triggered_pin_state == GPIO.LOW and low_time is None:
 		low_time = time.time()
-		print(f"Pin {triggered_pin} went LOW at {low_time}")
+		print_text(f"Pin {triggered_pin} went LOW at {low_time}")
 
 	# if a pin goes HIGH again, reset the low_time
 	if triggered_pin_state == GPIO.HIGH and low_time is not None:
-		print(f"Pin {triggered_pin} went HIGH again, resetting the low_time")
+		print_text(f"Pin {triggered_pin} went HIGH again, resetting the low_time")
 		low_time = None
 
 	# condition 1: triggered pin went low and debounce time has passed since going low -> all pins now unblocked
 	if triggered_pin_state == GPIO.LOW and low_time is not None:
 		elapsed_since_low_time = time.time() - low_time
 		if elapsed_since_low_time > DEBOUNCE_TIME:
-			print(f"Pin {triggered_pin} has been LOW for {elapsed_since_low_time:.2f}s (>= {DEBOUNCE_TIME}s) - unblocking ALL pins")
+			print_text(f"Pin {triggered_pin} has been LOW for {elapsed_since_low_time:.2f}s (>= {DEBOUNCE_TIME}s) - unblocking ALL pins")
 			triggered_pin = None
 			trigger_time = None
 			low_time = None
@@ -84,7 +87,7 @@ def check_unblock_conditions():
 
 	# condition 2: max duration has been exceeded while the same pin has remained HIGH
 	if triggered_pin_state == GPIO.HIGH and elapsed_since_trigger >= MAX_HIGH_DURATION:
-		print(f"Pin {triggered_pin} still HIGH after {MAX_HIGH_DURATION}s - unblocking all pins EXCEPT {triggered_pin}")
+		print_text(f"Pin {triggered_pin} still HIGH after {MAX_HIGH_DURATION}s - unblocking all pins EXCEPT {triggered_pin}")
 
 		# reset all pins EXCEPT the triggered pin
 		return False, [p for p in GPIO_PINS if p != triggered_pin]
@@ -92,9 +95,13 @@ def check_unblock_conditions():
 	# if neither condition is met, return false and keep all pins blocked
 	return False, None
 
+def print_text(text):
+	with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
+		f.write(text)
+
 try:
-	print(f"Monitoring GPIO pins {GPIO_PINS}...")
-	print(f"Debounce time: {DEBOUNCE_TIME}s, Max high duration: {MAX_HIGH_DURATION}s")
+	print_text(f"Monitoring GPIO pins {GPIO_PINS}...")
+	print_text(f"Debounce time: {DEBOUNCE_TIME}s, Max high duration: {MAX_HIGH_DURATION}s")
 
 	while True:
 		# get the pins which can be scanned/unblocked
@@ -108,33 +115,33 @@ try:
 			# if there is an active pin
 			if active_pin != -1:
 				# output that the pin is HIGH
-				print(f"HIGH DETECTED FROM PIN {active_pin}")
+				print_text(f"HIGH DETECTED FROM PIN {active_pin}")
 
 				# block ALL pins immediately
 				triggered_pin = active_pin
 				trigger_time = time.time()
 				low_time = None
-				print(f"ALL pins blocked at {time.time()}")
+				print_text(f"ALL pins blocked at {time.time()}")
 
 				# take photo and process results
 				detectionResults = take_photo(active_pin)
-				print(json.dumps(detectionResults, indent=2, default=str))
+				print_text(json.dumps(detectionResults, indent=2, default=str))
 				
 
 				# if animal is detected, trigger wifi call to deter system
 				if detectionResults["animal_detected"] == True:
-					print(f"DETER!!! RUN!!!")
+					print_text(f"DETER!!! RUN!!!")
 					try:
 						resp = requests.get("http://192.168.68.106/on", timeout=5)
-						print(f"sent deter signal")
+						print_text(f"sent deter signal")
 					except Exception as e:
-						print(f"Error sending deter signal: {e}")
+						print_text(f"Error sending deter signal: {e}")
 
 			time.sleep(0.05)
 		
 
 except KeyboardInterrupt:
-	print("Exiting program..")
+	print_text("Exiting program..")
 
 finally:
 	GPIO.cleanup()
