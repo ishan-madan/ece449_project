@@ -11,7 +11,7 @@ from lightweightml import detect_animal
 # store gpio pins to listen to and assign cameras to those pins
 GPIO_PINS = [20, 21, 26, 16]
 # GPIO_PINS = [20]
-CAM_ASSIGN = {20:'0', 21:'1', 26:'2', 16:'0'}
+CAM_ASSIGN = {16:'0', 26:'1', 21:'2', 20:'3'}
 
 # the amount of time we will wait after a pin goes low before allowing it to scan again
 DEBOUNCE_TIME = 0.2
@@ -20,7 +20,7 @@ DEBOUNCE_TIME = 0.2
 MAX_HIGH_DURATION = 30.0
 
 # photo directory to save photos into
-PHOTO_DIR = "test_photos/"
+PHOTO_DIR = "/home/ratwranglers/Desktop/ece449_project/test_photos"
 
 GPIO.setmode(GPIO.BCM)
 

@@ -6,10 +6,10 @@ import time
 from datetime import datetime
 
 # global vars
-MODEL_PATH = "models/ishan_v2.pt"
+MODEL_PATH = "/home/ratwranglers/Desktop/ece449_project/models/ishan_v3.pt"
 CONF = 0.25
 IOU = 0.1
-PHOTO_DIR = "annotated_photos/"
+
 model = YOLO(MODEL_PATH)
 
 def detect_animal(image_path: str):
