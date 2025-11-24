@@ -22,6 +22,10 @@ LOG_FILE = "/media/usb/logs/cronlog.txt"
 with open("/media/usb/logs/cronlog.txt", "a") as f:
 	f.write("SCRIPT IS SCRIPTTINGGGG!!!" + "\n")
 	
+def check_nighttime():
+	now = datetime.now().time()
+	return time(15, 0) <= now <= time(17, 0)
+	
 def print_text(text):
 	with open(LOG_FILE, "a") as f:
 		f.write(text + "\n")
@@ -137,6 +141,15 @@ try:
 			if active_pin != -1:
 				# output that the pin is HIGH
 				print_text(f"HIGH DETECTED FROM PIN {active_pin}")
+				
+				#checking if lights need to be turned on
+				if check_nighttime():
+					print_text("nighttime sending wifi signal")
+					try:
+						resp = requests.get("http://192.168.68.106/lights", timeout=5)
+						print_text(f"sent light signal")
+					except Exception as e:
+						print_text(f"Error sending light signal: {e}")
 
 				# block ALL pins immediately
 				triggered_pin = active_pin
