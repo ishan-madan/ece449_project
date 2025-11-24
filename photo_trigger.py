@@ -5,9 +5,27 @@ import requests
 from datetime import datetime
 import json
 from lightweightml import detect_animal
+import os
 
-with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
-	f.write("Script started!")
+with open("/media/usb/logs/cronlog.txt", "a") as f:
+	f.write("ABOUT TO CHECK USB MOUNT" + "\n")
+
+#wait until USB exists (waiting for mount)
+while not os.path.ismount("/media/usb"):
+	with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
+		f.write("waiting for usb to mount" + "\n")
+	time.sleep(1)
+
+#with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
+#	f.write("Script started!")
+LOG_FILE = "/media/usb/logs/cronlog.txt"
+with open("/media/usb/logs/cronlog.txt", "a") as f:
+	f.write("SCRIPT IS SCRIPTTINGGGG!!!" + "\n")
+	
+def print_text(text):
+	with open(LOG_FILE, "a") as f:
+		f.write(text + "\n")
+
 
 "21: Front PIR(1),26: PIR(2),20: 3, 16: Back PIR(4)"
 
@@ -23,7 +41,8 @@ DEBOUNCE_TIME = 0.2
 MAX_HIGH_DURATION = 30.0
 
 # photo directory to save photos into
-PHOTO_DIR = "/home/ratwranglers/ece449_project/test_photos"
+# PHOTO_DIR = "/home/ratwranglers/ece449_project/test_photos"
+PHOTO_DIR = "/media/usb/test_photos"
 
 GPIO.setmode(GPIO.BCM)
 
@@ -38,7 +57,9 @@ low_time = None
 # take photo method takes a photo and stores it. Outputs the result of the ML model
 def take_photo(pir_sensor):
 	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-	photo_path = f"{PHOTO_DIR}photo_{pir_sensor}_{timestamp}.jpg"
+	#photo_path = f"{PHOTO_DIR}photo_{pir_sensor}_{timestamp}.jpg"
+	filename = f"photo_{pir_sensor}_{timestamp}.jpg"
+	photo_path = os.path.join(PHOTO_DIR, filename)
 	subprocess.run(["rpicam-still", "-t", "2000", "--camera", CAM_ASSIGN[pir_sensor], "-o", photo_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 	print_text(f"Photo takesn and saved to {photo_path}")
 	return detect_animal(photo_path)
@@ -95,9 +116,9 @@ def check_unblock_conditions():
 	# if neither condition is met, return false and keep all pins blocked
 	return False, None
 
-def print_text(text):
-	with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
-		f.write(text)
+#def print_text(text):
+#	with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
+#		f.write(text)
 
 try:
 	print_text(f"Monitoring GPIO pins {GPIO_PINS}...")
