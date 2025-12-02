@@ -72,10 +72,12 @@ low_time = None
 # take photo method takes a photo and stores it. Outputs the result of the ML model
 def take_photo(pir_sensor):
 	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+
 	#photo_path = f"{PHOTO_DIR}photo_{pir_sensor}_{timestamp}.jpg"
 	filename = f"photo_{pir_sensor}_{timestamp}.jpg"
 	photo_path = os.path.join(PHOTO_DIR, filename)
-	subprocess.run(["rpicam-still", "-t", "1000", "--camera", CAM_ASSIGN[pir_sensor], "-o", photo_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+	subprocess.run(["rpicam-still", "--camera", CAM_ASSIGN[pir_sensor], "-o", photo_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
 	print_text(f"Photo takesn and saved to {photo_path}")
 	return detect_animal(photo_path)
 
