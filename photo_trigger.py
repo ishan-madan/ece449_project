@@ -7,36 +7,50 @@ import json
 from lightweightml import detect_animal
 import os
 
-with open("/media/usb/logs/cronlog.txt", "a") as f:
-	f.write("ABOUT TO CHECK USB MOUNT" + "\n")
+#with open("/media/usb/logs/cronlog.txt", "a") as f:
+#	f.write("ABOUT TO CHECK USB MOUNT" + "\n")
 
 #wait until USB exists (waiting for mount)
-while not os.path.ismount("/media/usb"):
-	with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
-		f.write("waiting for usb to mount" + "\n")
-	time.sleep(1)
+#while not os.path.ismount("/media/usb"):
+#	with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
+#		f.write("waiting for usb to mount" + "\n")
+#	time.sleep(1)
 
 #with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
 #	f.write("Script started!")
-LOG_FILE = "/media/usb/logs/cronlog.txt"
-with open("/media/usb/logs/cronlog.txt", "a") as f:
-	f.write("SCRIPT IS SCRIPTTINGGGG!!!" + "\n")
+LOG_FILE = "/home/ratwranglers/Desktop/cronlog.txt"
+with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
+	f.write("SCRIPT IS SCRIPTINGGG!!!" + "\n")
 	
+#check if the current hour is between 5pm and 7am
 def check_nighttime():
-	now = datetime.now().time()
-	return time(15, 0) <= now <= time(17, 0)
+	now = datetime.now()
+	now_hour = now.hour
+	return ((now_hour >= 17) or (now_hour <= 7))
 	
 def print_text(text):
 	with open(LOG_FILE, "a") as f:
 		f.write(text + "\n")
 
 
-"21: Front PIR(1),26: PIR(2),20: 3, 16: Back PIR(4)"
+"21: Front PIR(1),26: PIR(2),20: 3, 6: Back PIR(4)"
 
 # store gpio pins to listen to and assign cameras to those pins
-GPIO_PINS = [20, 21, 26, 16]
+GPIO_PINS = [20, 21, 26, 6]
+POWER_PIN = 13
+BUTTON_PIN = 19
+GPIO.setmode(GPIO.BCM)
+
+for pin in GPIO_PINS:
+	GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+	
+GPIO.setup(POWER_PIN, GPIO.OUT)
+GPIO.output(POWER_PIN, GPIO.HIGH)
+GPIO.setup(BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+
 # GPIO_PINS = [20]
-CAM_ASSIGN = {16:'0', 26:'1', 21:'2', 20:'3'}
+CAM_ASSIGN = {6:'0', 26:'1', 21:'3', 20:'2'}
 
 # the amount of time we will wait after a pin goes low before allowing it to scan again
 DEBOUNCE_TIME = 0.2
@@ -46,12 +60,9 @@ MAX_HIGH_DURATION = 30.0
 
 # photo directory to save photos into
 # PHOTO_DIR = "/home/ratwranglers/ece449_project/test_photos"
-PHOTO_DIR = "/media/usb/test_photos"
+PHOTO_DIR = "/home/ratwranglers/ece449_project/test_photos"
 
-GPIO.setmode(GPIO.BCM)
 
-for pin in GPIO_PINS:
-	GPIO.setup(pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 # track which pin is triggered and when it was triggered and what time it goes low
 triggered_pin = None
@@ -64,7 +75,7 @@ def take_photo(pir_sensor):
 	#photo_path = f"{PHOTO_DIR}photo_{pir_sensor}_{timestamp}.jpg"
 	filename = f"photo_{pir_sensor}_{timestamp}.jpg"
 	photo_path = os.path.join(PHOTO_DIR, filename)
-	subprocess.run(["rpicam-still", "-t", "2000", "--camera", CAM_ASSIGN[pir_sensor], "-o", photo_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+	subprocess.run(["rpicam-still", "-t", "1000", "--camera", CAM_ASSIGN[pir_sensor], "-o", photo_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 	print_text(f"Photo takesn and saved to {photo_path}")
 	return detect_animal(photo_path)
 
@@ -129,6 +140,13 @@ try:
 	print_text(f"Debounce time: {DEBOUNCE_TIME}s, Max high duration: {MAX_HIGH_DURATION}s")
 
 	while True:
+		
+		if GPIO.input(BUTTON_PIN) == GPIO.HIGH:
+			print_text("shutdown button has been pressed, shutting down")
+			subprocess.run(["sudo", "shutdown", "-h", "now"])
+			time.sleep(0.5)
+			continue
+		
 		# get the pins which can be scanned/unblocked
 		all_unblocked, scannable_pins = check_unblock_conditions()
 
@@ -142,20 +160,25 @@ try:
 				# output that the pin is HIGH
 				print_text(f"HIGH DETECTED FROM PIN {active_pin}")
 				
-				#checking if lights need to be turned on
-				if check_nighttime():
-					print_text("nighttime sending wifi signal")
-					try:
-						resp = requests.get("http://192.168.68.106/lights", timeout=5)
-						print_text(f"sent light signal")
-					except Exception as e:
-						print_text(f"Error sending light signal: {e}")
-
 				# block ALL pins immediately
 				triggered_pin = active_pin
 				trigger_time = time.time()
 				low_time = None
 				print_text(f"ALL pins blocked at {time.time()}")
+				
+				#checking if lights need to be turned on
+				if not check_nighttime():
+					print_text("not nighttime, no light needed")
+				if check_nighttime():
+					print_text("nighttime sending wifi signal")
+					try:
+						resp = requests.get("http://192.168.68.106/lights", timeout=0.5)
+						print_text(f"sent light signal")
+						#time.sleep(0.5)
+					except Exception as e:
+						print_text(f"Error sending light signal: {e}")
+				
+
 
 				# take photo and process results
 				detectionResults = take_photo(active_pin)
