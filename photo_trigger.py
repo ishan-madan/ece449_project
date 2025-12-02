@@ -18,7 +18,10 @@ import os
 
 #with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
 #	f.write("Script started!")
+
+
 LOG_FILE = "/home/ratwranglers/Desktop/cronlog.txt"
+
 with open("/home/ratwranglers/Desktop/cronlog.txt", "a") as f:
 	f.write("SCRIPT IS SCRIPTINGGG!!!" + "\n")
 	
@@ -60,7 +63,7 @@ MAX_HIGH_DURATION = 30.0
 
 # photo directory to save photos into
 # PHOTO_DIR = "/home/ratwranglers/ece449_project/test_photos"
-PHOTO_DIR = "/home/ratwranglers/ece449_project/test_photos"
+PHOTO_DIR = "/home/ratwranglers/ece449_project/test_photos/"
 
 
 
