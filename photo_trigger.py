@@ -39,7 +39,7 @@ low_time = None
 def take_photo(pir_sensor):
 	timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
 	photo_path = f"{PHOTO_DIR}photo_{pir_sensor}_{timestamp}.jpg"
-	subprocess.run(["rpicam-still", "-t", "2000", "--camera", CAM_ASSIGN[pir_sensor], "-o", photo_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+	subprocess.run(["rpicam-still", "--camera", CAM_ASSIGN[pir_sensor], "-o", photo_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 	print_text(f"Photo takesn and saved to {photo_path}")
 	return detect_animal(photo_path)
 
