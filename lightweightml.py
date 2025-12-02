@@ -6,7 +6,7 @@ import time
 from datetime import datetime
 
 # global vars
-MODEL_PATH = "/home/ratwranglers/ece449_project/models/ishan_v3.pt"
+MODEL_PATH = "/home/ratwranglers/ece449_project/models/ishan_v4.pt"
 CONF = 0.25
 IOU = 0.1
 
